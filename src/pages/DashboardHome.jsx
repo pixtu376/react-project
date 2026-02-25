@@ -1,49 +1,33 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
+import { fetchUserProfile } from '../api';
 
 const DashboardHome = () => {
   const { user } = useAuth();
 
+  // Зависимый запрос: начнется только если user.id существует (ТЗ п. 7)
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['userProfile', user?.id],
+    queryFn: () => fetchUserProfile(user.id),
+    enabled: !!user?.id, 
+    refetchInterval: 60000, // Авто-обновление раз в минуту
+  });
+
   return (
     <div className="dashboard-panel">
-      <h1>Привет, {user.name}! 👋</h1>
-      <p>Вот сводка вашей активности за последнюю неделю.</p>
-
+      <h1>Привет, {profile?.name || user.name}! 👋</h1>
+      {isLoading && <span>Обновление профиля...</span>}
+      
       <div className="stats-widgets">
-        <div className="widget">
-          <h3>2</h3>
-          <p>Курса в процессе</p>
-        </div>
-        <div className="widget">
-          <h3>14</h3>
-          <p>Часов изучено</p>
-        </div>
-        <div className="widget">
-          <h3>85%</h3>
-          <p>Средний результат тестов</p>
-        </div>
-        <div className="widget success">
-          <h3>1</h3>
-          <p>Сертификат получен</p>
-        </div>
+        <div className="widget"><h3>2</h3><p>Курса в процессе</p></div>
+        <div className="widget"><h3>14</h3><p>Часов изучено</p></div>
       </div>
 
       <div className="recent-activity">
-        <h3>Последняя активность</h3>
-        <ul className="activity-list">
-          <li>
-            <span className="time">Сегодня, 10:00</span>
-            <p>Просмотрен урок "Введение в React Hooks"</p>
-          </li>
-          <li>
-            <span className="time">Вчера, 18:30</span>
-            <p>Сдано домашнее задание по CSS Grid</p>
-          </li>
-          <li>
-            <span className="time">12.10.2023</span>
-            <p>Приобретен курс "Python для Data Science"</p>
-          </li>
-        </ul>
+        <h3>Данные из профиля (API):</h3>
+        <p>Email: {profile?.email}</p>
+        <p>Компания: {profile?.company?.name}</p>
       </div>
     </div>
   );
