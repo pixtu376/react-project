@@ -1,20 +1,13 @@
 import React from 'react';
 
-const CourseCard = ({ title, category, price, image, level, duration }) => (
+const CourseCard = ({ id, title, body, onUpdate, onDelete }) => (
   <div className="course-card">
-    <div className="card-image">
-      <img src={image} alt={title} />
-      <span className="category-badge">{category}</span>
-    </div>
     <div className="card-content">
       <h3>{title}</h3>
-      <div className="card-meta">
-        <span>📶 {level}</span>
-        <span>🕒 {duration}</span>
-      </div>
+      <p>{body?.substring(0, 100)}...</p> 
       <div className="card-footer">
-        <span className="price">{price}</span>
-        <button className="btn-sm">Подробнее</button>
+        <button className="btn-sm" onClick={() => onUpdate(id)}>Редактировать</button>
+        <button className="btn-sm btn-danger" onClick={() => onDelete(id)}>Удалить</button>
       </div>
     </div>
   </div>

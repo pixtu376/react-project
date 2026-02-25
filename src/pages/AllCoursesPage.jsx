@@ -1,46 +1,111 @@
-import React, { useState } from 'react';
-import { useCourseFilter } from '../hooks/useCourseFilter';
-import { COURSES_DATA } from '../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { api } from '../api';
 import CourseCard from '../components/CourseCard';
 
 const AllCoursesPage = () => {
-  const [search, setSearch] = useState('');
-  const filteredCourses = useCourseFilter(COURSES_DATA, search);
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Состояние для формы создания/редактирования
+  const [newCourseTitle, setNewCourseTitle] = useState('');
+
+  // 1. GET - Получение данных
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      const response = await api.getCourses();
+      setCourses(response.data);
+      setError(null);
+    } catch (err) {
+      setError('Ошибка при загрузке данных');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 2. POST - Создание
+  const handleAddCourse = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await api.createCourse({
+        title: newCourseTitle,
+        body: 'Новое описание курса',
+        userId: 1
+      });
+      // Имитируем добавление в список (т.к. API фейковый)
+      setCourses([response.data, ...courses]);
+      setNewCourseTitle('');
+    } catch (err) {
+      alert('Не удалось добавить курс');
+    }
+  };
+
+  // 3. DELETE - Удаление
+  const handleDelete = async (id) => {
+    try {
+      await api.deleteCourse(id);
+      setCourses(courses.filter(course => course.id !== id));
+    } catch (err) {
+      alert('Ошибка при удалении');
+    }
+  };
+
+  // 4. PUT - Обновление
+  const handleUpdate = async (id) => {
+    const updatedTitle = prompt("Введите новое название курса:");
+    if (!updatedTitle) return;
+
+    try {
+      const response = await api.updateCourse(id, {
+        title: updatedTitle,
+        body: 'Обновленное описание',
+        userId: 1
+      });
+      setCourses(courses.map(c => c.id === id ? { ...c, title: response.data.title } : c));
+    } catch (err) {
+      alert('Ошибка при обновлении');
+    }
+  };
 
   return (
     <div className="page container">
       <div className="courses-header">
-        <h2>Каталог курсов</h2>
-        <p>Выберите направление и начните путь к новой профессии</p>
-      </div>
-      
-      <div className="filter-bar">
-        <input 
-          type="text" 
-          placeholder="🔍 Поиск курса (например: Python, Design)..." 
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="search-input"
-        />
-        <div className="filter-tags">
-          <button onClick={() => setSearch('')}>Все</button>
-          <button onClick={() => setSearch('Frontend')}>Frontend</button>
-          <button onClick={() => setSearch('Backend')}>Backend</button>
-          <button onClick={() => setSearch('Design')}>Design</button>
-        </div>
+        <h2>Управление курсами (API)</h2>
+        
+        {/* Форма добавления (POST) */}
+        <form onSubmit={handleAddCourse} className="filter-bar">
+          <input 
+            type="text" 
+            placeholder="Название нового курса..." 
+            value={newCourseTitle}
+            onChange={(e) => setNewCourseTitle(e.target.value)}
+            className="search-input"
+            required
+          />
+          <button type="submit" className="btn-add">Добавить курс</button>
+        </form>
       </div>
 
+      {/* Индикатор загрузки */}
+      {loading && <div className="loader">Загрузка курсов...</div>}
+
+      {/* Обработка ошибок */}
+      {error && <div className="error-message">{error}</div>}
+
       <div className="courses-grid">
-        {filteredCourses.length > 0 ? (
-          filteredCourses.map(course => (
-            <CourseCard key={course.id} {...course} />
-          ))
-        ) : (
-          <div className="no-results">
-            <h3>По вашему запросу ничего не найдено 😔</h3>
-            <p>Попробуйте изменить поисковый запрос.</p>
-          </div>
-        )}
+        {!loading && courses.map(course => (
+          <CourseCard 
+            key={course.id} 
+            {...course} 
+            onDelete={handleDelete} 
+            onUpdate={handleUpdate}
+          />
+        ))}
       </div>
     </div>
   );
