@@ -25,7 +25,7 @@ export const useCreateCourse = () => {
 export const useDeleteCourse = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: api.deleteCourse,
+    mutationFn: (id) => api.deleteCourse(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ['courses'] });
       const previous = queryClient.getQueryData(['courses']);
@@ -35,7 +35,7 @@ export const useDeleteCourse = () => {
     onError: (err, id, context) => {
       queryClient.setQueryData(['courses'], context.previous);
     },
-    //onSettled: () => queryClient.invalidateQueries({ queryKey: ['courses'] })
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['courses'] })
   });
 };
 
@@ -56,7 +56,7 @@ export const useUpdateCourse = () => {
     onError: (err, updatedCourse, context) => {
       queryClient.setQueryData(['courses'], context.previous);
     },
-    //onSettled: () => queryClient.invalidateQueries({ queryKey: ['courses'] })
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['courses'] })
   });
 };
 

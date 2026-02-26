@@ -1,25 +1,29 @@
 import axios from 'axios';
 
-const API_URL = 'https://jsonplaceholder.typicode.com/posts';
+const BASE_URL = 'https://699f5a1d3188b0b1d535e442.mockapi.io/courses';
 
 export const fetchCourses = async () => {
-  const { data } = await axios.get(`${API_URL}?_limit=6`);
+  const { data } = await axios.get(BASE_URL);
   return data;
 };
 
 export const createCourse = async (newCourse) => {
-  const { data } = await axios.post(API_URL, newCourse);
+  const { data } = await axios.post(BASE_URL, newCourse);
   return data;
 };
 
 export const updateCourse = async (payload) => {
   const { id, ...updates } = payload;
-  const { data } = await axios.put(`${API_URL}/${id}`, updates);
+  // Логируем для отладки
+  console.log("Обновление курса с ID:", id); 
+  const { data } = await axios.put(`${BASE_URL}/${id}`, updates);
   return data;
 };
 
 export const deleteCourse = async (id) => {
-  await axios.delete(`${API_URL}/${id}`);
+  console.log("Удаление курса с ID:", id);
+  // Если здесь придет undefined или null, будет 404
+  const { data } = await axios.delete(`${BASE_URL}/${id}`);
   return id;
 };
 
