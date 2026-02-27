@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { AuthProvider } from './context/AuthContext';
 import './App.css';
 
 import Header from './components/Header';
@@ -32,7 +31,6 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
         <Router>
           <div className="app-wrapper">
             <Header />
@@ -54,7 +52,6 @@ function App() {
             <Footer />
           </div>
         </Router>
-      </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

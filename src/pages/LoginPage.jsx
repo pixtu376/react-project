@@ -1,59 +1,83 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppSelector, useAppDispatch } from '../store/hooks';
+import { login, clearError } from '../store/slices/authSlice'; // thunk и action
 
 const LoginPage = () => {
-  const [loginInput, setLogin] = useState('');
-  const [passInput, setPass] = useState('');
-  const [error, setError] = useState('');
-  const { login } = useAuth();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (login(loginInput, passInput)) {
+  const { isAuthenticated, loading, error } = useAppSelector((state) => state.auth);
+
+  // Если уже авторизован — сразу редирект (защита от повторного входа)
+  useEffect(() => {
+    if (isAuthenticated) {
       navigate('/dashboard');
-    } else {
-      setError('Неверный логин или пароль! (Подсказка: user / 123456)');
     }
+  }, [isAuthenticated, navigate]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    dispatch(clearError()); // сбрасываем предыдущую ошибку
+
+    dispatch(login({ username, password }))
+      .unwrap() // удобно для обработки fulfilled/rejected в промисе
+      .then(() => {
+        navigate('/dashboard'); // успех — редирект
+      })
+      .catch(() => {
+        // ошибка уже в store, отобразим ниже
+      });
   };
 
   return (
-    <div className="page auth-page">
-      <div className="auth-card">
-        <h2>С возвращением!</h2>
-        <p className="auth-subtitle">Войдите, чтобы продолжить обучение</p>
-        
-        {error && <div className="error-banner">{error}</div>}
-        
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Логин</label>
-            <input 
-              type="text" 
-              value={loginInput} 
-              onChange={e => setLogin(e.target.value)}
-              className={error ? 'input-error' : ''}
-              placeholder="Введите user"
-            />
-          </div>
-          <div className="form-group">
-            <label>Пароль</label>
-            <input 
-              type="password" 
-              value={passInput} 
-              onChange={e => setPass(e.target.value)}
-              className={error ? 'input-error' : ''}
-              placeholder="Введите 123456"
-            />
-          </div>
-          <button type="submit" className="btn btn-primary full-width">Войти</button>
-        </form>
-        
-        <div className="auth-footer">
-          <p>Еще нет аккаунта? <Link to="/register">Зарегистрироваться</Link></p>
+    <div className="login-page container">
+      <h2>Вход в GreenStudy</h2>
+      
+      {error && (
+        <div className="error-message">
+          {error}
+          <button onClick={() => dispatch(clearError())}>×</button>
         </div>
-      </div>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="username">Имя пользователя</label>
+          <input
+            type="text"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="password">Пароль</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+
+        <button 
+          type="submit" 
+          className="btn btn-primary"
+          disabled={loading}
+        >
+          {loading ? 'Входим...' : 'Войти'}
+        </button>
+      </form>
+
+      <p>
+        Нет аккаунта? <a href="/register">Зарегистрироваться</a>
+      </p>
     </div>
   );
 };

@@ -1,25 +1,33 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAppSelector, useAppDispatch } from '../store/hooks';
+import { logout } from '../store/slices/authSlice';
 
 const Sidebar = () => {
-  const { user, logout } = useAuth();
+  const { user, isAuthenticated } = useAppSelector(state => state.auth);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
     navigate('/');
   };
 
   const isActive = (path) => location.pathname === path ? 'active-link' : '';
+
+  // Если пользователь не авторизован — можно ничего не показывать или показать гостевой вид
+  // Но в твоём оригинале предполагается, что Sidebar рендерится только для авторизованных
+  if (!isAuthenticated) {
+    return null; // или можно вернуть минимальный гостевой сайдбар, если нужно
+  }
 
   return (
     <aside className="sidebar">
       <div className="user-profile-mini">
         <img src={user?.avatar} alt="avatar" className="avatar-img" />
         <div className="user-info">
-          <strong>{user?.name}</strong>
+          <strong>{user?.name || 'Гость'}</strong>
           <span>Студент</span>
         </div>
       </div>

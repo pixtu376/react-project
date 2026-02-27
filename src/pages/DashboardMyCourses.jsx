@@ -1,6 +1,6 @@
 import React from 'react';
 
-// Локальный компонент прогресса
+// Локальный компонент прогресса (оставлен без изменений)
 const ProgressCard = ({ title, progress, lastLesson }) => (
   <div className="progress-card">
     <div className="pc-header">

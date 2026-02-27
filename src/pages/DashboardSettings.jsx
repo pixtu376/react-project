@@ -1,8 +1,8 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAppSelector } from '../store/hooks'; // кастомный хук из store/hooks.js
 
 const DashboardSettings = () => {
-  const { user } = useAuth();
+  const { user } = useAppSelector((state) => state.auth);
   
   return (
     <div className="dashboard-panel">
@@ -13,11 +13,11 @@ const DashboardSettings = () => {
         <div className="form-row">
           <div className="form-group">
             <label>Имя</label>
-            <input type="text" defaultValue={user.name} />
+            <input type="text" defaultValue={user?.name || ''} />
           </div>
           <div className="form-group">
             <label>Email</label>
-            <input type="email" defaultValue={user.email} disabled />
+            <input type="email" defaultValue={user?.email || ''} disabled />
           </div>
         </div>
       </div>

@@ -1,12 +1,12 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import Sidebar from './Sidebar';
+import { useAppSelector } from '../store/hooks';
+import Sidebar from '../components/Sidebar';
 
 const DashboardLayout = () => {
-  const { user } = useAuth();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
 
-  if (!user) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
@@ -14,7 +14,7 @@ const DashboardLayout = () => {
     <div className="dashboard-wrapper container">
       <Sidebar />
       <main className="dashboard-content">
-        <Outlet /> 
+        <Outlet />
       </main>
     </div>
   );
